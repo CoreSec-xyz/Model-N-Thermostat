@@ -41,6 +41,60 @@ void initTIM2() {
     TIM2_CR1 = 0x1; // enable timer
 }
 
+void initDisplay() {
+    // CLK_CRTCR- Clock RTC register
+    CLK_CRTCR = 0x10; // Selects the source provided on to RTC and its divider
+
+    // CLK_PCKENR2 - Peripheral clock gating register 2
+    CLK_PCKENR2 |= (1 << 2); // Enable Clock for RTC
+    CLK_PCKENR2 |= (1 << 3); // Enable Clock for LCD
+
+    // LCD_FRQ - LCD frequency selection register
+    LCD_FRQ  = 0x00;     // Clear prescaler and divider bits
+    LCD_FRQ |= (1 << 4); // Set clock prescaler bits to prescaler 2 (clock input/2)
+    LCD_FRQ |= (1 << 1); // Set divider bits to LCD_Divider_18 (clock prescaler/18)
+
+    // LCD_CR1-3 LCD control registers
+    LCD_CR1 &= ~0x07;   // Clear the duty bits and B2 bit
+    LCD_CR1 |= 0x06;    // Set Duty cycle to LCD_Duty_1_4
+    LCD_CR1 |= 0x00;    // Set Bias to LCD_Bias_1_3
+
+    LCD_CR2 &= ~0xEF;   // Clear voltage source, contrast and pulses on duration bits.
+    LCD_CR2 |= 0x00;    // Set Voltage Source for LCD to Internal
+    LCD_CR2 |= 0x08;    // Configure LCD contrast. Select the maximum voltage Vlcd of 3.00V / 3.12V
+    LCD_CR2 |= 0x20;    // Configure LCD Pulse on duration = 1/CLKprescaler
+
+    LCD_CR3 &= ~0x07;   // Clear the dead time bits
+    LCD_CR3 |= 0x00;    // Set to No dead Time
+
+    // LCD_PM0-2 LCD Port mask registers
+    // Configure pins that are not used for LCD as standard GPIOs.
+    LCD_PM0 = 0xFF;
+    LCD_PM1 = 0xFF;
+    LCD_PM2 = 0x7B; //0b01111011;
+
+    // Enable the LCD peripheral
+    LCD_CR3 |= 0x40;
+}
+
+//00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+void setDisplay(uint8_t *ram_bytes) {
+    /* Test show element */
+    LCD_RAM0 = 0b11111111;
+    LCD_RAM1 = 0b11111111;
+    LCD_RAM2 = 0b01111011;
+    LCD_RAM3 = 0b11100000;
+    LCD_RAM4 = 0b11111111;
+    LCD_RAM5 = 0b10111111;
+    LCD_RAM6 = 0b00000111;
+    LCD_RAM7 = 0b11111110;
+    LCD_RAM8 = 0b11111111;
+    LCD_RAM9 = 0b01111011;
+    LCD_RAM10 = 0b11100000;
+    LCD_RAM11 = 0b11111111;
+    LCD_RAM12 = 0b10111111;
+    LCD_RAM13 = 0b00000111;
+}
 
 void initMotor() {
         // 1. H-Bridge
@@ -89,9 +143,10 @@ int uartWrite(const char *str) {
 	return(i); // Bytes sent
 }
 
-void putchar(unsigned char data) {
+int putchar(int data) {
     USART1_DR = data;
     while (!(USART1_SR & USART_SR_TC));
+    return 0;
 }
 
 char uartRead() {
@@ -144,7 +199,12 @@ int main() {
 
         initUSART();
 
+        initDisplay();
+
         initMotor();
+
+        int x = 1;
+        setDisplay(&x);
 
         printf("Thermostat: Startup complete\n");
 
