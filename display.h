@@ -217,6 +217,8 @@ struct DisplayData{
 };
 
 void initDisplay();
+uint16_t numSegments(const uint8_t number);
+uint16_t charSegments(const uint8_t c);
 void setDisplay(const struct DisplayData * const data);
 
 #endif //DISPLAY_H

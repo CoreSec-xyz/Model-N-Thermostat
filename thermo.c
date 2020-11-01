@@ -164,11 +164,13 @@ int main() {
         display.point2 = 1;
         display.point3 = 1;
         display.weekdays = 1;
-        display.num1segments = 0x3FF;
-        display.num2segments = 0x3FF;
-        display.num3segments = 0x3FF;
-        display.num4segments = 0x3FF;
         display.bargraph = 0x1;
+
+        display.num1segments = charSegments('T');
+        display.num2segments = charSegments('E');
+        display.num3segments = charSegments('S');
+        display.num4segments = charSegments('T');
+
         setDisplay(&display);
 
         printf("Thermostat: Startup complete\n");

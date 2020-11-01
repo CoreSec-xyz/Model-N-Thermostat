@@ -36,6 +36,75 @@ void initDisplay() {
     LCD_CR3 |= 0x40;
 }
 
+uint16_t numSegments(const uint8_t number) {
+    uint16_t segments = 0x0000;
+    switch (number) {
+        case 0: segments = 0x003F; break;
+        case 1: segments = 0x0006; break;
+        case 2: segments = 0x00DB; break;
+        case 3: segments = 0x00CF; break;
+        case 4: segments = 0x00E6; break;
+        case 5: segments = 0x00ED; break;
+        case 6: segments = 0x00FD; break;
+        case 7: segments = 0x0007; break;
+        case 8: segments = 0x00FF; break;
+        case 9: segments = 0x00EF; break;
+    }
+    return segments;
+}
+
+uint16_t charSegments(const uint8_t c) {
+    uint16_t segments = 0x0000;
+    switch (c) {
+        case 'a': case 'A': segments = 0x00F7; break;
+        case 'b': case 'B': segments = 0x00FC; break;
+        case 'c': segments = 0x00D8; break;
+        case 'C': segments = 0x0039; break;
+        case 'd': segments = 0x00DE; break;
+        case 'D': segments = 0x010F; break;
+        case 'e': case 'E': segments = 0x00F9; break;
+        case 'f': case 'F': segments = 0x00F1; break;
+        case 'g': case 'G': segments = 0x00BD; break;
+        case 'h': segments = 0x00F4; break;
+        case 'H': segments = 0x00F6; break;
+        case 'i': case 'I': segments = 0x0109; break;
+        case 'j': case 'J': segments = 0x008C; break;
+        case 'k': case 'K': segments = 0x0380; break;
+        case 'l': case 'L': segments = 0x0038; break;
+        case 'm': case 'M': segments = 0x0137; break;
+        case 'n': segments = 0x00D4; break;
+        case 'N': segments = 0x0306; break;
+        case 'o': case 'O': segments = 0x00DC; break;
+        case 'p': case 'P': segments = 0x00F3; break;
+        case 'q': case 'Q': segments = 0x023F; break;
+        case 'r': segments = 0x00D0; break;
+        case 'R': segments = 0x02F3; break;
+        case 's': case 'S': segments = 0x0269; break;
+        case 't': case 'T': segments = 0x0101; break;
+        case 'u': segments = 0x001C; break;
+        case 'U': segments = 0x003E; break;
+        case 'v': case 'V': segments = 0x0204; break;
+        case 'w': case 'W': segments = 0x013E; break;
+        // x not possible
+        case 'y': case 'Y': segments = 0x00EE; break;
+        case 'z': case 'Z': segments = 0x00DB; break;
+        case '0': case 0: segments = numSegments(0); break;
+        case '1': case 1: segments = numSegments(1); break;
+        case '2': case 2: segments = numSegments(2); break;
+        case '3': case 3: segments = numSegments(3); break;
+        case '4': case 4: segments = numSegments(4); break;
+        case '5': case 5: segments = numSegments(5); break;
+        case '6': case 6: segments = numSegments(6); break;
+        case '7': case 7: segments = numSegments(7); break;
+        case '8': case 8: segments = numSegments(8); break;
+        case '9': case 9: segments = numSegments(9); break;
+        case ' ': segments = 0x0000; break;
+        case '+': segments = 0x01C0; break;
+        case '-': segments = 0x00C0; break;
+    }
+    return segments;
+}
+
 void setDisplay(const struct DisplayData * const data) {
     data->timegrid ? (LCD_TIMEGRID_ADDR |= LCD_TIMEGRID_MASK) : (LCD_TIMEGRID_ADDR &= ~LCD_TIMEGRID_MASK);
     data->sun ? (LCD_SUN_ADDR |= LCD_SUN_MASK) : (LCD_SUN_ADDR &= ~LCD_SUN_MASK);
