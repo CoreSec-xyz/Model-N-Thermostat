@@ -73,13 +73,13 @@ uint16_t charSegments(const uint8_t c) {
         case 'l': case 'L': segments = 0x0038; break;
         case 'm': case 'M': segments = 0x0137; break;
         case 'n': segments = 0x00D4; break;
-        case 'N': segments = 0x0306; break;
+        case 'N': segments = 0x0037; break;
         case 'o': case 'O': segments = 0x00DC; break;
         case 'p': case 'P': segments = 0x00F3; break;
         case 'q': case 'Q': segments = 0x023F; break;
         case 'r': segments = 0x00D0; break;
         case 'R': segments = 0x02F3; break;
-        case 's': case 'S': segments = 0x0269; break;
+        case 's': case 'S': segments = 0x00ED; break;
         case 't': case 'T': segments = 0x0101; break;
         case 'u': segments = 0x001C; break;
         case 'U': segments = 0x003E; break;
