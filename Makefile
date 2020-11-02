@@ -5,7 +5,7 @@ LIBS = -lstm8 -mstm8
 
 all: thermo.hex
 
-thermo.hex: thermo.rel display.rel
+thermo.hex: thermo.rel display.rel motor.rel
 	${CC} ${CFLAGS} ${LIBS} ${INCLUDES} --out-fmt-ihx -o $@ $^
 
 %.rel: %.c
