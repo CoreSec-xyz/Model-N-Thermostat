@@ -18,6 +18,9 @@ uint16_t readADC() {
 }
 
 void initMotor() {
+
+    initADC();
+
         // 1. H-Bridge
     PE_DDR |= MOTO_E7 | MOTO_E6;
     PE_CR1 |= MOTO_E7 | MOTO_E6;

@@ -82,101 +82,94 @@ void initClock() {
 }
 
 int main() {
-        initClock();
+    initClock();
+    initTIM2();
+    enableInterrupts()
+    initUSART();
+    initDisplay();
+    initMotor();
 
-        initTIM2();
+    struct DisplayData display = {0};
+    display.timegrid = 1;
+    display.sun = 1;
+    display.moon = 1;
+    display.window = 1;
+    display.vacation = 1;
+    display.degrees = 1;
+    display.percent = 1;
+    display.battery = 1;
+    display.automatic = 1;
+    display.manual = 1;
+    display.colon = 1;
+    display.point1 = 1;
+    display.point2 = 1;
+    display.point3 = 1;
+    display.weekdays = 1;
+    display.bargraph = 0x1;
 
-        enableInterrupts()
+    display.num1segments = charSegments('T');
+    display.num2segments = charSegments('E');
+    display.num3segments = charSegments('S');
+    display.num4segments = charSegments('T');
 
-        initADC();
+    setDisplay(&display);
 
-        initUSART();
+    printf("Thermostat: Startup complete\n");
 
-        initDisplay();
+    while(true) {
+        uint16_t adc, t;
 
-        initMotor();
+        delay_ms(1000);
 
-        struct DisplayData display = {0};
-        display.timegrid = 1;
-        display.sun = 1;
-        display.moon = 1;
-        display.window = 1;
-        display.vacation = 1;
-        display.degrees = 1;
-        display.percent = 1;
-        display.battery = 1;
-        display.automatic = 1;
-        display.manual = 1;
-        display.colon = 1;
-        display.point1 = 1;
-        display.point2 = 1;
-        display.point3 = 1;
-        display.weekdays = 1;
-        display.bargraph = 0x1;
+        if(display.bargraph == ((uint32_t)1 << 23))
+            display.bargraph = 1;
+        else
+            display.bargraph = (display.bargraph << 1);
 
-        display.num1segments = charSegments('T');
-        display.num2segments = charSegments('E');
-        display.num3segments = charSegments('S');
-        display.num4segments = charSegments('T');
-
+        if(display.weekdays == (1 << 6))
+            display.weekdays = 1;
+        else
+            display.weekdays = (display.weekdays << 1);
         setDisplay(&display);
 
-        printf("Thermostat: Startup complete\n");
+        if (uartBuffer[0] == 'b') {
+            motorDir = false;
+            memmove(uartBuffer, uartBuffer+1, strlen(uartBuffer));
+            count = atoi(uartBuffer);
+        } else if (uartBuffer[0] == 'f') {
+            motorDir = true;
+            memmove(uartBuffer, uartBuffer+1, strlen(uartBuffer));
+            count = atoi(uartBuffer);
+        }
+        clearUartBuffer();
 
-        while(true) {
-            uint16_t adc, t;
+        adc = readADC();
+        t = tim2_millis/100;
+        printf("ADC value: %d, Time: %u\n", readADC(), (uint16_t)(millis()/100));
 
-            delay_ms(1000);
-
-            if(display.bargraph == ((uint32_t)1 << 23))
-                display.bargraph = 1;
-            else
-                display.bargraph = (display.bargraph << 1);
-
-            if(display.weekdays == (1 << 6))
-                display.weekdays = 1;
-            else
-                display.weekdays = (display.weekdays << 1);
-            setDisplay(&display);
-
-            if (uartBuffer[0] == 'b') {
-              motorDir = false;
-              memmove(uartBuffer, uartBuffer+1, strlen(uartBuffer));
-              count = atoi(uartBuffer);
-            } else if (uartBuffer[0] == 'f') {
-              motorDir = true;
-              memmove(uartBuffer, uartBuffer+1, strlen(uartBuffer));
-              count = atoi(uartBuffer);
-            }
-            clearUartBuffer();
-
-            adc = readADC();
-            t = tim2_millis/100;
-            printf("ADC value: %d, Time: %u\n", readADC(), (uint16_t)(millis()/100));
-
-            if (count > 0) {
-              printf("Running %s for %d.%d sec\n", (motorDir? "forward" : "backward"), count/10, count%10);
-              setMotor(motorDir, !motorDir);
-              count--;
-            } else {
-              setMotor(0, 0);
-            }
+        if (count > 0) {
+            printf("Running %s for %d.%d sec\n", (motorDir? "forward" : "backward"), count/10, count%10);
+            setMotor(motorDir, !motorDir);
+            count--;
+        } else {
+            setMotor(0, 0);
         }
     }
+}
 
-    #define UART_RECV_ISR 28
-    #define TIM2_OVF_ISR 19
+#define UART_RECV_ISR 28
+#define TIM2_OVF_ISR 19
 
-    void uart_isr() __interrupt(UART_RECV_ISR) {
-        uint8_t i;
-        uartBufferPos %= UART_BUFFER_SIZE-1;
-        for(i = uartBufferPos; i < UART_BUFFER_SIZE; i++) {
-            uartBuffer[i] = uartRead();
-        }
-        uartBufferPos++;
+void uart_isr() __interrupt(UART_RECV_ISR) {
+    uint8_t i;
+    uartBufferPos %= UART_BUFFER_SIZE-1;
+    for(i = uartBufferPos; i < UART_BUFFER_SIZE; i++) {
+        uartBuffer[i] = uartRead();
     }
+    uartBufferPos++;
+}
 
-    void tim2_isr() __interrupt(TIM2_OVF_ISR) {
-        TIM2_SR1 = 0;
-        tim2_millis++;
-    }
+void tim2_isr() __interrupt(TIM2_OVF_ISR) {
+    TIM2_SR1 = 0;
+    tim2_millis++;
+}
